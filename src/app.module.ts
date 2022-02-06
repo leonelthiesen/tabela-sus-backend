@@ -23,6 +23,9 @@ import { SigtapDescricao } from './sigtap/descricao/sigtap-descricao';
         TypeOrmModule.forRoot({
             type: 'postgres',
             url: process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/tabela-sus',
+            ssl: {
+                rejectUnauthorized: false
+            },
             synchronize: true,
             logging: false,
             entities: [
