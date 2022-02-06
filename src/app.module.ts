@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { User } from './users/user.entity';
@@ -20,34 +20,29 @@ import { SigtapDescricao } from './sigtap/descricao/sigtap-descricao';
         ConfigModule.forRoot(),
         UsersModule,
         SigtapModule,
-        TypeOrmModule.forRootAsync({
-            imports: [ConfigModule],
-            useFactory: (configService: ConfigService) => {
-                return ({
-                    type: 'postgres',
-                    host: configService.get<string>('DB_HOST'),
-                    port: configService.get<number>('DB_PORT'),
-                    username: configService.get<string>('DB_USERNAME'),
-                    password: configService.get<string>('DB_PASSWORD'),
-                    database: configService.get<string>('DB_DATABASE_NAME'),
-                    synchronize: true,
-                    logging: false,
-                    entities: [
-                        User,
-                        SigtapImport,
-                        SigtapCompetencia,
-                        SigtapProcedimento,
-                        SigtapCid,
-                        SigtapRegistro,
-                        SigtapFinanciamento,
-                        SigtapProcedimentoCid,
-                        SigtapProcedimentoCompativel,
-                        SigtapDescricao
-                    ]
-                });
-            },
-            inject: [ConfigService]
-        })]
+        TypeOrmModule.forRoot({
+            type: 'postgres',
+            host: process.env.DB_HOST || 'localhost',
+            port: Number(process.env.DB_PORT || 5432),
+            username: process.env.DB_USERNAME || 'postgres',
+            password: process.env.DB_PASSWORD || 'postgres',
+            database: process.env.DB_DATABASE_NAME || 'tabela-sus',
+            synchronize: true,
+            logging: false,
+            entities: [
+                User,
+                SigtapImport,
+                SigtapCompetencia,
+                SigtapProcedimento,
+                SigtapCid,
+                SigtapRegistro,
+                SigtapFinanciamento,
+                SigtapProcedimentoCid,
+                SigtapProcedimentoCompativel,
+                SigtapDescricao
+            ]
+        })
+    ]
 })
 export class AppModule {
     // constructor(private connection: Connection) {}

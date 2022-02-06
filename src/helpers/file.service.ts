@@ -28,7 +28,7 @@ export class FileService {
             });
 
             file.on("finish", () => {
-                resolve();
+                resolve(filePath);
             });
 
             file.on("error", err => {
@@ -89,7 +89,7 @@ export class FileService {
                     if (err) {
                         reject(err.message);
                     } else {
-                        resolve();
+                        resolve(destPath);
                     }
                 });
             });
