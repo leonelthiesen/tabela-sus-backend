@@ -16,8 +16,12 @@ export class SigtapProcedimentoCompativelService {
         return await this.respository.find();
     }
 
-    async findOne(id: string): Promise<SigtapProcedimentoCompativel> {
-        return await this.respository.findOne(id);
+    async findOne(id: number): Promise<SigtapProcedimentoCompativel> {
+        return await this.respository.findOne({
+            where: {
+                id
+            }
+        });
     }
 
     async remove(id: number): Promise<void> {

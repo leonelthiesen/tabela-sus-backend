@@ -17,7 +17,11 @@ export class SigtapFinanciamentoService {
     }
 
     async findOne(id: number): Promise<SigtapFinanciamento> {
-        return await this.respository.findOne(id);
+        return await this.respository.findOne({
+            where: {
+                id
+            }
+        });
     }
 
     async remove(id: number): Promise<void> {
@@ -30,8 +34,10 @@ export class SigtapFinanciamentoService {
 
     async findOneByCompetenciaCodigo(competencia: SigtapCompetencia, codigo): Promise<SigtapFinanciamento> {
         return await this.respository.findOne({
-            competencia,
-            codigo
+            where: {
+                competencia,
+                codigo
+            }
         });
     }
 }

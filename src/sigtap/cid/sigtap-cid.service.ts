@@ -30,8 +30,12 @@ export class SigtapCidService {
         return await this.respository.find();
     }
 
-    async findOne(id: string): Promise<SigtapCid> {
-        return await this.respository.findOne(id);
+    async findOne(id: number): Promise<SigtapCid> {
+        return await this.respository.findOne({
+            where: {
+                id
+            }
+        });
     }
 
     async remove(id: number): Promise<void> {
@@ -44,8 +48,10 @@ export class SigtapCidService {
 
     async findOneByCompetenciaCodigo(competencia: SigtapCompetencia, codigo): Promise<SigtapCid> {
         return await this.respository.findOne({
-            competencia,
-            codigo
+            where: {
+                competencia,
+                codigo
+            }
         });
     }
 }

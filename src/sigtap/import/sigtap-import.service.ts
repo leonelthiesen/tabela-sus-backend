@@ -29,8 +29,12 @@ export class SigtapImportService {
         return this.sigtapImportRespository.find();
     }
 
-    findOne(id: string): Promise<SigtapImport> {
-        return this.sigtapImportRespository.findOne(id);
+    findOne(id: number): Promise<SigtapImport> {
+        return this.sigtapImportRespository.findOne({
+            where: {
+                id
+            }
+        });
     }
 
     async remove(id: number): Promise<void> {

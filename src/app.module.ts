@@ -15,6 +15,8 @@ import { SigtapProcedimentoCompativel } from './sigtap/procedimento-compativel/s
 import { SigtapFinanciamento } from './sigtap/financiamento/sigtap-financiamento';
 import { SigtapDescricao } from './sigtap/descricao/sigtap-descricao';
 
+import configuration from './config/configuration';
+
 @Module({
     imports: [
         ConfigModule.forRoot(),
@@ -22,10 +24,8 @@ import { SigtapDescricao } from './sigtap/descricao/sigtap-descricao';
         SigtapModule,
         TypeOrmModule.forRoot({
             type: 'postgres',
-            url: process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/tabela-sus',
-            ssl: {
-                rejectUnauthorized: false
-            },
+            url: configuration().database.url,
+            ssl: configuration().database.ssl,
             synchronize: true,
             logging: false,
             entities: [

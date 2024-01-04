@@ -17,7 +17,11 @@ export class SigtapProcedimentoCidService {
     }
 
     async findOne(id: number): Promise<SigtapProcedimentoCid> {
-        return await this.respository.findOne(id);
+        return await this.respository.findOne({
+            where: {
+                id
+            }
+        });
     }
 
     async remove(id: number): Promise<void> {

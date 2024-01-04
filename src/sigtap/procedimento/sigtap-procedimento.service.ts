@@ -19,15 +19,21 @@ export class SigtapProcedimentoService {
     }
 
     async findOne(id: number): Promise<SigtapProcedimento> {
-        return await this.respository.findOne(id);
+        return await this.respository.findOne({
+            where: {
+                id
+            }
+        });
     }
 
     async findByCompetenciaIdNome(competenciaId: number, filter: string): Promise<SigtapProcedimento[]> {
         return await this.respository.find({
-            competencia: {
-                id: competenciaId
-            },
-            nome: Like(`%${filter}%`)
+            where: {
+                competencia: {
+                    id: competenciaId
+                },
+                nome: Like(`%${filter}%`)
+            }
         });
     }
 
@@ -41,8 +47,10 @@ export class SigtapProcedimentoService {
 
     async findOneByCompetenciaCodigo(competencia: SigtapCompetencia, codigo): Promise<SigtapProcedimento> {
         return await this.respository.findOne({
-            competencia,
-            codigo
+            where: {
+                competencia,
+                codigo
+            }
         });
     }
 

@@ -34,11 +34,20 @@ export class SigtapCompetenciaService {
     }
 
     async findOne(id: number): Promise<SigtapCompetencia> {
-        return await this.sigtapCompetenciaRespository.findOne(id);
+        return await this.sigtapCompetenciaRespository.findOne({
+            where: {
+                id
+            }
+        });
     }
 
     async findOneByCompetencia(anoMesCompetencia: string): Promise<SigtapCompetencia> {
-        return await this.sigtapCompetenciaRespository.findOne({ anoMesCompetencia }, { relations: ["import"] });
+        return await this.sigtapCompetenciaRespository.findOne({
+            where: { 
+                anoMesCompetencia
+            },
+            relations: ["import"]
+        });
     }
 
     async delete(id: number): Promise<void> {

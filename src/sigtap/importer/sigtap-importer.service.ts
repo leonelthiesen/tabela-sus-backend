@@ -148,46 +148,56 @@ export class SigtapImporterService implements OnModuleInit {
     async postImport(sigtapCompetencia: SigtapCompetencia) {
         console.debug('Post-import start.');
         const procedimentoRepository = getRepository(SigtapProcedimento);
-        let procedimentos = await procedimentoRepository.find({
-            competencia: {
-                id: sigtapCompetencia.id
+        const procedimentos = await procedimentoRepository.find({
+            where: {
+                competencia: {
+                    id: sigtapCompetencia.id
+                }
             }
         });
 
         for await (const procedimento of procedimentos) {
             procedimento.hasCid = await getRepository(SigtapProcedimentoCid).count({
-                competencia: {
-                    id: sigtapCompetencia.id,
-                },
-                procedimento: {
-                    id: procedimento.id
+                where: {                    
+                    competencia: {
+                        id: sigtapCompetencia.id,
+                    },
+                    procedimento: {
+                        id: procedimento.id
+                    }
                 }
             }) > 0;
 
             procedimento.hasCompativelPrincipal = await getRepository(SigtapProcedimentoCompativel).count({
-                competencia: {
-                    id: sigtapCompetencia.id,
-                },
-                procedimentoPrincipal: {
-                    id: procedimento.id
+                where: {
+                    competencia: {
+                        id: sigtapCompetencia.id,
+                    },
+                    procedimentoPrincipal: {
+                        id: procedimento.id
+                    }
                 }
             }) > 0;
 
             procedimento.hasCompativel = await getRepository(SigtapProcedimentoCompativel).count({
-                competencia: {
-                    id: sigtapCompetencia.id,
-                },
-                procedimentoCompativel: {
-                    id: procedimento.id
+                where: {
+                    competencia: {
+                        id: sigtapCompetencia.id,
+                    },
+                    procedimentoCompativel: {
+                        id: procedimento.id
+                    }
                 }
             }) > 0;
 
             procedimento.hasDescricao = await getRepository(SigtapDescricao).count({
-                competencia: {
-                    id: sigtapCompetencia.id,
-                },
-                procedimento: {
-                    id: procedimento.id
+                where: {
+                    competencia: {
+                        id: sigtapCompetencia.id,
+                    },
+                    procedimento: {
+                        id: procedimento.id
+                    }
                 }
             }) > 0;
         }

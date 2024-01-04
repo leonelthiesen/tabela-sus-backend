@@ -13,7 +13,11 @@ export class SigtapDescricaoService {
     ) { }
 
     async findOne(id: number): Promise<SigtapDescricao> {
-        return await this.respository.findOne(id);
+        return await this.respository.findOne({
+            where: {
+                id
+            }
+        });
     }
 
     async remove(id: number): Promise<void> {
