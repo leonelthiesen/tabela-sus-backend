@@ -1,5 +1,5 @@
 import { Injectable, OnModuleInit } from "@nestjs/common";
-import { getRepository, getConnection } from "typeorm";
+import { DataSource } from "typeorm";
 import { promises, createReadStream } from "fs";
 import { createInterface } from "readline";
 
@@ -16,10 +16,27 @@ import { SigtapProcedimentoCompativel } from "../procedimento-compativel/sigtap-
 import { SigtapFinanciamento } from "../financiamento/sigtap-financiamento";
 import { SigtapDescricao } from "../descricao/sigtap-descricao";
 import { ImportStatus } from "../import/sigtap-import";
+import { SigtapDescricaoService } from "../descricao/sigtap-descricao.service";
+import { SigtapProcedimentoCompativelService } from "../procedimento-compativel/sigtap-procedimento-compativel.service";
+import { SigtapProcedimentoCidService } from "../procedimento-cid/sigtap-procedimento-cid.service";
+import { SigtapCidService } from "../cid/sigtap-cid.service";
+import { SigtapRegistroService } from "../registro/sigtap-registro.service";
+import { SigtapProcedimentoService } from "../procedimento/sigtap-procedimento.service";
+import { SigtapFinanciamentoService } from "../financiamento/sigtap-financiamento.service";
+
+const entityServiceClassMap = new Map<string, any>([
+    [SigtapDescricaoService.name, SigtapDescricaoService],
+    [SigtapProcedimentoCompativelService.name, SigtapProcedimentoCompativelService],
+    [SigtapProcedimentoCidService.name, SigtapProcedimentoCidService],
+    [SigtapCidService.name, SigtapCidService],
+    [SigtapRegistroService.name, SigtapRegistroService],
+    [SigtapProcedimentoService.name, SigtapProcedimentoService],
+    [SigtapFinanciamentoService.name, SigtapFinanciamentoService]
+]);
 
 @Injectable()
 export class SigtapImporterService implements OnModuleInit {
-    serviceRefsCache: Map<string, any> = new Map();
+    serviceInstanceCache: Map<string, any> = new Map();
     foreignDataCache: Map<string, Map<string, string | number>> = new Map();
 
     constructor(
@@ -27,6 +44,7 @@ export class SigtapImporterService implements OnModuleInit {
         private readonly sigtapCompetenciaService: SigtapCompetenciaService,
         private readonly sigtapFileService: SigtapFileService,
         private moduleRef: ModuleRef,
+        private dataSource: DataSource,
     ) { }
 
     async onModuleInit() {
@@ -147,7 +165,7 @@ export class SigtapImporterService implements OnModuleInit {
 
     async postImport(sigtapCompetencia: SigtapCompetencia) {
         console.debug('Post-import start.');
-        const procedimentoRepository = getRepository(SigtapProcedimento);
+        const procedimentoRepository = this.dataSource.getRepository(SigtapProcedimento);
         const procedimentos = await procedimentoRepository.find({
             where: {
                 competencia: {
@@ -157,7 +175,7 @@ export class SigtapImporterService implements OnModuleInit {
         });
 
         for await (const procedimento of procedimentos) {
-            procedimento.hasCid = await getRepository(SigtapProcedimentoCid).count({
+            procedimento.hasCid = await this.dataSource.getRepository(SigtapProcedimentoCid).count({
                 where: {                    
                     competencia: {
                         id: sigtapCompetencia.id,
@@ -168,7 +186,7 @@ export class SigtapImporterService implements OnModuleInit {
                 }
             }) > 0;
 
-            procedimento.hasCompativelPrincipal = await getRepository(SigtapProcedimentoCompativel).count({
+            procedimento.hasCompativelPrincipal = await this.dataSource.getRepository(SigtapProcedimentoCompativel).count({
                 where: {
                     competencia: {
                         id: sigtapCompetencia.id,
@@ -179,7 +197,7 @@ export class SigtapImporterService implements OnModuleInit {
                 }
             }) > 0;
 
-            procedimento.hasCompativel = await getRepository(SigtapProcedimentoCompativel).count({
+            procedimento.hasCompativel = await this.dataSource.getRepository(SigtapProcedimentoCompativel).count({
                 where: {
                     competencia: {
                         id: sigtapCompetencia.id,
@@ -190,7 +208,7 @@ export class SigtapImporterService implements OnModuleInit {
                 }
             }) > 0;
 
-            procedimento.hasDescricao = await getRepository(SigtapDescricao).count({
+            procedimento.hasDescricao = await this.dataSource.getRepository(SigtapDescricao).count({
                 where: {
                     competencia: {
                         id: sigtapCompetencia.id,
@@ -267,7 +285,7 @@ export class SigtapImporterService implements OnModuleInit {
     }
 
     async insertBatch(arrayObjects, entity) {
-        await getConnection()
+        await this.dataSource
             .createQueryBuilder()
             .insert()
             .into(entity)
@@ -276,13 +294,18 @@ export class SigtapImporterService implements OnModuleInit {
     }
 
     getServiceRef(serviceName: string) {
-        if (this.serviceRefsCache.has(serviceName)) {
-            return this.serviceRefsCache.get(serviceName);
+        if (this.serviceInstanceCache.has(serviceName)) {
+            return this.serviceInstanceCache.get(serviceName);
         }
 
-        const serviceRef = this.moduleRef.get(serviceName);
-        this.serviceRefsCache.set(serviceName, serviceRef);
-        return serviceRef;
+        let serviceClassRef = entityServiceClassMap.get(serviceName);
+        if (!serviceClassRef) {
+            throw new Error('Service ' + serviceName + ' not found.');
+        }
+
+        const serviceInstance = this.moduleRef.get(serviceClassRef);
+        this.serviceInstanceCache.set(serviceName, serviceInstance);
+        return serviceInstance;
     }
 
     async getRelationData(sigtapCompetencia, foreignName: string, codigo: string) {
